@@ -7,23 +7,85 @@
 
 'use strict';
 
-const isNumber = require('@lazy-assert/check-basic').isUnSafeNumLike;
+import { isUnSafeNumLike as isNumber } from '@lazy-assert/check-basic';
 
-const toRegexRange = (min, max, options) => {
-  if (isNumber(min) === false) {
+export interface IOptions
+{
+  /**
+   * Wrap the returned value in parentheses when there is more than one regex condition. Useful when you're dynamically generating ranges.
+   *
+   * @example
+   * console.log(toRegexRange('-10', '10'));
+   * //=> -[1-9]|-?10|[0-9]
+   *
+   * console.log(toRegexRange('-10', '10', { capture: true }));
+   * //=> (-[1-9]|-?10|[0-9])
+   */
+  capture?: boolean,
+  /**
+   * Use the regex shorthand for [0-9]:
+   *
+   * @example
+   * console.log(toRegexRange('0', '999999'));
+   * //=> [0-9]|[1-9][0-9]{1,5}
+   *
+   * console.log(toRegexRange('0', '999999', { shorthand: true }));
+   * //=> \d|[1-9]\d{1,5}
+   */
+  shorthand?: boolean,
+  /**
+   * @default true
+   * This option relaxes matching for leading zeros when when ranges are zero-padded.
+   * @example
+   * const source = toRegexRange('-0010', '0010');
+   * const regex = new RegExp(`^${source}$`);
+   * console.log(regex.test('-10')); //=> true
+   * console.log(regex.test('-010')); //=> true
+   * console.log(regex.test('-0010')); //=> true
+   * console.log(regex.test('10')); //=> true
+   * console.log(regex.test('010')); //=> true
+   * console.log(regex.test('0010')); //=> true
+   * @example When `relaxZeros` is false, matching is strict:
+   * const source = toRegexRange('-0010', '0010', { relaxZeros: false });
+   * const regex = new RegExp(`^${source}$`);
+   * console.log(regex.test('-10')); //=> false
+   * console.log(regex.test('-010')); //=> false
+   * console.log(regex.test('-0010')); //=> true
+   * console.log(regex.test('10')); //=> false
+   * console.log(regex.test('010')); //=> false
+   * console.log(regex.test('0010')); //=> true
+   */
+  relaxZeros?: boolean,
+
+  strictZeros?: boolean,
+  wrap?: boolean,
+}
+
+export const SymCache = Symbol.for('SymCache');
+
+export function toRegexRange(min: number | string, max?: number | string, options?: IOptions): string
+{
+  if (isNumber(min) === false)
+  {
     throw new TypeError('toRegexRange: expected the first argument to be a number');
   }
 
-  if (max === void 0 || min === max) {
+  if (max === void 0 || min === max)
+  {
     return String(min);
   }
 
-  if (isNumber(max) === false) {
+  if (isNumber(max) === false)
+  {
     throw new TypeError('toRegexRange: expected the second argument to be a number.');
   }
 
+  min = String(min);
+  max = String(max);
+
   let opts = { relaxZeros: true, ...options };
-  if (typeof opts.strictZeros === 'boolean') {
+  if (typeof opts.strictZeros === 'boolean')
+  {
     opts.relaxZeros = opts.strictZeros === false;
   }
 
@@ -33,41 +95,51 @@ const toRegexRange = (min, max, options) => {
   let wrap = String(opts.wrap);
   let cacheKey = min + ':' + max + '=' + relax + shorthand + capture + wrap;
 
-  if (toRegexRange.cache.hasOwnProperty(cacheKey)) {
-    return toRegexRange.cache[cacheKey].result;
+  if (toRegexRange[SymCache].hasOwnProperty(cacheKey))
+  {
+    // @ts-ignore
+    return toRegexRange[SymCache][cacheKey].result;
   }
 
+  // @ts-ignore
   let a = Math.min(min, max);
+  // @ts-ignore
   let b = Math.max(min, max);
 
-  if (Math.abs(a - b) === 1) {
+  if (Math.abs(a - b) === 1)
+  {
     let result = min + '|' + max;
-    if (opts.capture) {
+    if (opts.capture)
+    {
       return `(${result})`;
     }
-    if (opts.wrap === false) {
+    if (opts.wrap === false)
+    {
       return result;
     }
     return `(?:${result})`;
   }
 
   let isPadded = hasPadding(min) || hasPadding(max);
-  let state = { min, max, a, b };
+  let state: any = { min, max, a, b };
   let positives = [];
   let negatives = [];
 
-  if (isPadded) {
+  if (isPadded)
+  {
     state.isPadded = isPadded;
     state.maxLen = String(state.max).length;
   }
 
-  if (a < 0) {
+  if (a < 0)
+  {
     let newMin = b < 0 ? Math.abs(b) : 1;
     negatives = splitToPatterns(newMin, Math.abs(a), state, opts);
     a = state.a = 0;
   }
 
-  if (b >= 0) {
+  if (b >= 0)
+  {
     positives = splitToPatterns(a, b, state, opts);
   }
 
@@ -75,15 +147,18 @@ const toRegexRange = (min, max, options) => {
   state.positives = positives;
   state.result = collatePatterns(negatives, positives, opts);
 
-  if (opts.capture === true) {
+  if (opts.capture === true)
+  {
     state.result = `(${state.result})`;
-  } else if (opts.wrap !== false && (positives.length + negatives.length) > 1) {
+  }
+  else if (opts.wrap !== false && (positives.length + negatives.length) > 1)
+  {
     state.result = `(?:${state.result})`;
   }
 
-  toRegexRange.cache[cacheKey] = state;
+  toRegexRange[SymCache][cacheKey] = state;
   return state.result;
-};
+}
 
 function collatePatterns(neg, pos, options) {
   let onlyNegative = filterPatterns(neg, pos, '-', false, options) || [];
@@ -98,7 +173,7 @@ function splitToRanges(min, max) {
   let zeros = 1;
 
   let stop = countNines(min, nines);
-  let stops = new Set([max]);
+  let stops: any = new Set([max]);
 
   while (min <= stop && stop <= max) {
     stops.add(stop);
@@ -158,14 +233,14 @@ function rangeToPattern(start, stop, options) {
 }
 
 function splitToPatterns(min, max, tok, options) {
-  let ranges = splitToRanges(min, max);
+  let ranges = splitToRanges(min, max) as any as any[];
   let tokens = [];
   let start = min;
   let prev;
 
   for (let i = 0; i < ranges.length; i++) {
     let max = ranges[i];
-    let obj = rangeToPattern(String(start), String(max), options);
+    let obj = rangeToPattern(String(start), String(max), options) as any;
     let zeros = '';
 
     if (!tok.isPadded && prev && prev.pattern === obj.pattern) {
@@ -278,11 +353,13 @@ function padZeros(value, tok, options) {
  * Cache
  */
 
-toRegexRange.cache = {};
-toRegexRange.clearCache = () => (toRegexRange.cache = {});
+toRegexRange[SymCache] = {};
+toRegexRange.clearCache = () => (toRegexRange[SymCache] = {});
+
+Object.defineProperty(toRegexRange, 'toRegexRange', { value: toRegexRange });
+Object.defineProperty(toRegexRange, 'default', { value: toRegexRange });
 
 /**
  * Expose `toRegexRange`
  */
-
-module.exports = toRegexRange;
+export default toRegexRange;
