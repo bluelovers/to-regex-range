@@ -87,11 +87,12 @@ describe('to-regex-range', () => {
 
   describe('range', () => {
     it('should throw an error when the first arg is invalid:', () => {
+      // @ts-ignore
       expect(() => toRange()).toThrow();
     });
 
     it('should throw an error when the second arg is invalid:', () => {
-      expect(() => toRange(1, {})).toThrow();
+      expect(() => toRange(1, {} as any)).toThrow();
     });
 
     it('should match the given numbers', () => {

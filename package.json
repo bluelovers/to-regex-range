@@ -29,6 +29,14 @@
     "create-by-yarn-tool",
     "create-by-tsdx"
   ],
+  "homepage": "https://github.com/bluelovers/to-regex-range#readme",
+  "bugs": {
+    "url": "https://github.com/bluelovers/to-regex-range/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bluelovers/to-regex-range.git"
+  },
   "license": "MIT",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
   "contributors": [
