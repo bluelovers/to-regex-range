@@ -133,7 +133,7 @@ toRegexRange[t] = {}, toRegexRange.clearCache = () => toRegexRange[t] = {}, Obje
   value: toRegexRange
 }), Object.defineProperty(toRegexRange, "default", {
   value: toRegexRange
-}), Object.defineProperty(toRegexRange, t, {
+}), Object.defineProperty(toRegexRange, "SymCache", {
   value: t
 });
 

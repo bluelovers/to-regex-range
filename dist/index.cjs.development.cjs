@@ -308,7 +308,7 @@ Object.defineProperty(toRegexRange, 'toRegexRange', {
 Object.defineProperty(toRegexRange, 'default', {
   value: toRegexRange
 });
-Object.defineProperty(toRegexRange, SymCache, {
+Object.defineProperty(toRegexRange, 'SymCache', {
   value: SymCache
 });
 

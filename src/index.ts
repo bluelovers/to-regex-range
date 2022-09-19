@@ -408,7 +408,7 @@ toRegexRange.clearCache = () => (toRegexRange[SymCache] = {});
 
 Object.defineProperty(toRegexRange, 'toRegexRange', { value: toRegexRange });
 Object.defineProperty(toRegexRange, 'default', { value: toRegexRange });
-Object.defineProperty(toRegexRange, SymCache, { value: SymCache });
+Object.defineProperty(toRegexRange, 'SymCache', { value: SymCache });
 
 /**
  * Expose `toRegexRange`
