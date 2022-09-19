@@ -7,7 +7,7 @@
 
 'use strict';
 
-const isNumber = require('is-number');
+const isNumber = require('@lazy-assert/check-basic').isUnSafeNumLike;
 
 const toRegexRange = (min, max, options) => {
   if (isNumber(min) === false) {
