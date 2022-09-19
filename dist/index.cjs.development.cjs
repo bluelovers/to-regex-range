@@ -3,17 +3,30 @@
 var checkBasic = require('@lazy-assert/check-basic');
 
 const SymCache = /*#__PURE__*/Symbol.for('SymCache');
+
+function isAllowedValue(value) {
+  if (checkBasic.isUnSafeNumLike(value) === true) {
+    if (typeof value === 'string') {
+      return /^-?\d+$/.test(value);
+    }
+
+    return true;
+  }
+
+  return false;
+}
+
 function toRegexRange(min, max, options) {
-  if (checkBasic.isUnSafeNumLike(min) === false) {
-    throw new TypeError('toRegexRange: expected the first argument to be a number');
+  if (!isAllowedValue(min)) {
+    throw new TypeError(`toRegexRange: expected the first argument '${min}' to be a number like.`);
   }
 
   if (max === void 0 || min === max) {
     return String(min);
   }
 
-  if (checkBasic.isUnSafeNumLike(max) === false) {
-    throw new TypeError('toRegexRange: expected the second argument to be a number.');
+  if (!isAllowedValue(max)) {
+    throw new TypeError(`toRegexRange: expected the second argument '${max}' to be a number like.`);
   }
 
   min = String(min);
@@ -294,6 +307,9 @@ Object.defineProperty(toRegexRange, 'toRegexRange', {
 });
 Object.defineProperty(toRegexRange, 'default', {
   value: toRegexRange
+});
+Object.defineProperty(toRegexRange, SymCache, {
+  value: SymCache
 });
 
 module.exports = toRegexRange;

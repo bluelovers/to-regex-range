@@ -1,53 +1,57 @@
-import { isUnSafeNumLike as t } from "@lazy-assert/check-basic";
+import { isUnSafeNumLike as e } from "@lazy-assert/check-basic";
 
-const e = Symbol.for("SymCache");
+const t = Symbol.for("SymCache");
 
-function toRegexRange(n, r, a) {
-  if (!1 === t(n)) throw new TypeError("toRegexRange: expected the first argument to be a number");
-  if (void 0 === r || n === r) return String(n);
-  if (!1 === t(r)) throw new TypeError("toRegexRange: expected the second argument to be a number.");
-  n = String(n), r = String(r);
-  let o = {
-    relaxZeros: !0,
-    ...a
-  };
-  "boolean" == typeof o.strictZeros && (o.relaxZeros = !1 === o.strictZeros);
-  let i = n + ":" + r + "=" + String(o.relaxZeros) + String(o.shorthand) + String(o.capture) + String(o.wrap);
-  if (toRegexRange[e].hasOwnProperty(i)) return toRegexRange[e][i].result;
-  let s = Math.min(n, r), u = Math.max(n, r);
-  if (1 === Math.abs(s - u)) {
-    let t = n + "|" + r;
-    return o.capture ? `(${t})` : !1 === o.wrap ? t : `(?:${t})`;
-  }
-  let g = hasPadding(n) || hasPadding(r), c = {
-    min: n,
-    max: r,
-    a: s,
-    b: u
-  }, l = [], f = [];
-  return g && (c.isPadded = g, c.maxLen = String(c.max).length), s < 0 && (f = splitToPatterns(u < 0 ? Math.abs(u) : 1, Math.abs(s), c, o), 
-  s = c.a = 0), u >= 0 && (l = splitToPatterns(s, u, c, o)), c.negatives = f, c.positives = l, 
-  c.result = function collatePatterns(t, e, n) {
-    let r = filterPatterns(t, e, "-", !1) || [], a = filterPatterns(e, t, "", !1) || [], o = filterPatterns(t, e, "-?", !0) || [];
-    return r.concat(o).concat(a).join("|");
-  }(f, l), !0 === o.capture ? c.result = `(${c.result})` : !1 !== o.wrap && l.length + f.length > 1 && (c.result = `(?:${c.result})`), 
-  toRegexRange[e][i] = c, c.result;
+function isAllowedValue(t) {
+  return !0 === e(t) && ("string" != typeof t || /^-?\d+$/.test(t));
 }
 
-function rangeToPattern(t, e, n) {
-  if (t === e) return {
-    pattern: t,
+function toRegexRange(e, n, r) {
+  if (!isAllowedValue(e)) throw new TypeError(`toRegexRange: expected the first argument '${e}' to be a number like.`);
+  if (void 0 === n || e === n) return String(e);
+  if (!isAllowedValue(n)) throw new TypeError(`toRegexRange: expected the second argument '${n}' to be a number like.`);
+  e = String(e), n = String(n);
+  let a = {
+    relaxZeros: !0,
+    ...r
+  };
+  "boolean" == typeof a.strictZeros && (a.relaxZeros = !1 === a.strictZeros);
+  let o = e + ":" + n + "=" + String(a.relaxZeros) + String(a.shorthand) + String(a.capture) + String(a.wrap);
+  if (toRegexRange[t].hasOwnProperty(o)) return toRegexRange[t][o].result;
+  let i = Math.min(e, n), s = Math.max(e, n);
+  if (1 === Math.abs(i - s)) {
+    let t = e + "|" + n;
+    return a.capture ? `(${t})` : !1 === a.wrap ? t : `(?:${t})`;
+  }
+  let u = hasPadding(e) || hasPadding(n), g = {
+    min: e,
+    max: n,
+    a: i,
+    b: s
+  }, l = [], c = [];
+  return u && (g.isPadded = u, g.maxLen = String(g.max).length), i < 0 && (c = splitToPatterns(s < 0 ? Math.abs(s) : 1, Math.abs(i), g, a), 
+  i = g.a = 0), s >= 0 && (l = splitToPatterns(i, s, g, a)), g.negatives = c, g.positives = l, 
+  g.result = function collatePatterns(e, t, n) {
+    let r = filterPatterns(e, t, "-", !1) || [], a = filterPatterns(t, e, "", !1) || [], o = filterPatterns(e, t, "-?", !0) || [];
+    return r.concat(o).concat(a).join("|");
+  }(c, l), !0 === a.capture ? g.result = `(${g.result})` : !1 !== a.wrap && l.length + c.length > 1 && (g.result = `(?:${g.result})`), 
+  toRegexRange[t][o] = g, g.result;
+}
+
+function rangeToPattern(e, t, n) {
+  if (e === t) return {
+    pattern: e,
     count: [],
     digits: 0
   };
-  let r = function zip(t, e) {
+  let r = function zip(e, t) {
     let n = [];
-    for (let r = 0; r < t.length; r++) n.push([ t[r], e[r] ]);
+    for (let r = 0; r < e.length; r++) n.push([ e[r], t[r] ]);
     return n;
-  }(t, e), a = r.length, o = "", i = 0;
-  for (let t = 0; t < a; t++) {
-    let [e, n] = r[t];
-    e === n ? o += e : "0" !== e || "9" !== n ? o += `[${s = e}${(u = n) - s == 1 ? "" : "-"}${u}]` : i++;
+  }(e, t), a = r.length, o = "", i = 0;
+  for (let e = 0; e < a; e++) {
+    let [t, n] = r[e];
+    t === n ? o += t : "0" !== t || "9" !== n ? o += `[${s = t}${(u = n) - s == 1 ? "" : "-"}${u}]` : i++;
   }
   var s, u;
   return i && (o += !0 === n.shorthand ? "\\d" : "[0-9]"), {
@@ -57,59 +61,59 @@ function rangeToPattern(t, e, n) {
   };
 }
 
-function splitToPatterns(t, e, n, r) {
-  let a, o = function splitToRanges(t, e) {
-    let n = 1, r = 1, a = countNines(t, n), o = new Set([ e ]);
-    for (;t <= a && a <= e; ) o.add(a), n += 1, a = countNines(t, n);
-    for (a = countZeros(e + 1, r) - 1; t < a && a <= e; ) o.add(a), r += 1, a = countZeros(e + 1, r) - 1;
+function splitToPatterns(e, t, n, r) {
+  let a, o = function splitToRanges(e, t) {
+    let n = 1, r = 1, a = countNines(e, n), o = new Set([ t ]);
+    for (;e <= a && a <= t; ) o.add(a), n += 1, a = countNines(e, n);
+    for (a = countZeros(t + 1, r) - 1; e < a && a <= t; ) o.add(a), r += 1, a = countZeros(t + 1, r) - 1;
     return o = [ ...o ], o.sort(compare), o;
-  }(t, e), i = [], s = t;
-  for (let t = 0; t < o.length; t++) {
-    let e = o[t], u = rangeToPattern(String(s), String(e), r), g = "";
-    n.isPadded || !a || a.pattern !== u.pattern ? (n.isPadded && (g = padZeros(e, n, r)), 
-    u.string = g + u.pattern + toQuantifier(u.count), i.push(u), s = e + 1, a = u) : (a.count.length > 1 && a.count.pop(), 
-    a.count.push(u.count[0]), a.string = a.pattern + toQuantifier(a.count), s = e + 1);
+  }(e, t), i = [], s = e;
+  for (let e = 0; e < o.length; e++) {
+    let t = o[e], u = rangeToPattern(String(s), String(t), r), g = "";
+    n.isPadded || !a || a.pattern !== u.pattern ? (n.isPadded && (g = padZeros(t, n, r)), 
+    u.string = g + u.pattern + toQuantifier(u.count), i.push(u), s = t + 1, a = u) : (a.count.length > 1 && a.count.pop(), 
+    a.count.push(u.count[0]), a.string = a.pattern + toQuantifier(a.count), s = t + 1);
   }
   return i;
 }
 
-function filterPatterns(t, e, n, r, a) {
+function filterPatterns(e, t, n, r, a) {
   let o = [];
-  for (let a of t) {
-    let {string: t} = a;
-    r || contains(e, "string", t) || o.push(n + t), r && contains(e, "string", t) && o.push(n + t);
+  for (let a of e) {
+    let {string: e} = a;
+    r || contains(t, "string", e) || o.push(n + e), r && contains(t, "string", e) && o.push(n + e);
   }
   return o;
 }
 
-function compare(t, e) {
-  return t > e ? 1 : e > t ? -1 : 0;
+function compare(e, t) {
+  return e > t ? 1 : t > e ? -1 : 0;
 }
 
-function contains(t, e, n) {
-  return t.some((t => t[e] === n));
+function contains(e, t, n) {
+  return e.some((e => e[t] === n));
 }
 
-function countNines(t, e) {
-  return Number(String(t).slice(0, -e) + "9".repeat(e));
+function countNines(e, t) {
+  return Number(String(e).slice(0, -t) + "9".repeat(t));
 }
 
-function countZeros(t, e) {
-  return t - t % Math.pow(10, e);
+function countZeros(e, t) {
+  return e - e % Math.pow(10, t);
 }
 
-function toQuantifier(t) {
-  let [e = 0, n = ""] = t;
-  return n || e > 1 ? `{${e + (n ? "," + n : "")}}` : "";
+function toQuantifier(e) {
+  let [t = 0, n = ""] = e;
+  return n || t > 1 ? `{${t + (n ? "," + n : "")}}` : "";
 }
 
-function hasPadding(t) {
-  return /^-?(0+)\d/.test(t);
+function hasPadding(e) {
+  return /^-?(0+)\d/.test(e);
 }
 
-function padZeros(t, e, n) {
-  if (!e.isPadded) return t;
-  let r = Math.abs(e.maxLen - String(t).length), a = !1 !== n.relaxZeros;
+function padZeros(e, t, n) {
+  if (!t.isPadded) return e;
+  let r = Math.abs(t.maxLen - String(e).length), a = !1 !== n.relaxZeros;
   switch (r) {
    case 0:
     return "";
@@ -125,11 +129,13 @@ function padZeros(t, e, n) {
   }
 }
 
-toRegexRange[e] = {}, toRegexRange.clearCache = () => toRegexRange[e] = {}, Object.defineProperty(toRegexRange, "toRegexRange", {
+toRegexRange[t] = {}, toRegexRange.clearCache = () => toRegexRange[t] = {}, Object.defineProperty(toRegexRange, "toRegexRange", {
   value: toRegexRange
 }), Object.defineProperty(toRegexRange, "default", {
   value: toRegexRange
+}), Object.defineProperty(toRegexRange, t, {
+  value: t
 });
 
-export { e as SymCache, toRegexRange as default, toRegexRange };
+export { t as SymCache, toRegexRange as default, toRegexRange };
 //# sourceMappingURL=index.esm.mjs.map
